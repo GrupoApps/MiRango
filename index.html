@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiRango - Poker Hand Range Calculator</title>
+    <title>Poker Hand Matrix - MiRango</title>
     <style>
         * {
             margin: 0;
@@ -11,1225 +11,285 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --background-color: #ecf0f1;
-            --card-background: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #bdc3c7;
-            --hover-color: #34495e;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--background-color) 0%, #d5dbdb 100%);
-            color: var(--text-color);
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: var(--primary-color);
-        }
-
-        header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-
-        header p {
-            font-size: 1.1em;
-            color: var(--secondary-color);
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: var(--card-background);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-
-        .card h2 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            font-size: 1.4em;
-            border-bottom: 3px solid var(--secondary-color);
-            padding-bottom: 10px;
-        }
-
-        .card h3 {
-            color: var(--secondary-color);
-            margin-top: 15px;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-
-        /* Hand Matrix */
-        .hand-matrix {
-            display: grid;
-            grid-template-columns: repeat(13, 1fr);
-            gap: 3px;
-            margin-bottom: 20px;
-        }
-
-        .hand-cell {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--border-color);
-            border-radius: 5px;
-            cursor: pointer;
-            background: #ffffff;
-            font-weight: bold;
-            font-size: 0.75em;
-            transition: all 0.2s ease;
-            user-select: none;
-        }
-
-        .hand-cell:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .hand-cell.selected-in-range {
-            background: var(--secondary-color);
-            color: white;
-            border-color: var(--secondary-color);
-        }
-
-        .hand-cell.selected-excluded {
-            background: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-
-        .hand-cell.paired {
-            font-weight: bold;
-        }
-
-        /* Range Display */
-        .range-display {
-            background: #f8f9fa;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            min-height: 100px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
-
-        .range-display.empty {
-            color: #95a5a6;
-            font-style: italic;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Controls */
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            font-size: 0.9em;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .btn-primary {
-            background: var(--secondary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #229954;
-        }
-
-        .btn-danger {
-            background: var(--accent-color);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        .btn-warning {
-            background: var(--warning-color);
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background: #d68910;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .stats-box {
-            background: var(--card-background);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 3px;
-        }
-
-        .stat-label {
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .stat-value {
-            color: var(--secondary-color);
-            font-weight: bold;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .tab-button {
-            padding: 10px 15px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--text-color);
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .tab-button.active {
-            color: var(--secondary-color);
-            border-bottom-color: var(--secondary-color);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Preset Editor */
-        .preset-form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        label {
-            font-weight: bold;
-            color: var(--primary-color);
-            font-size: 0.9em;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        textarea,
-        select {
-            padding: 8px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            font-family: inherit;
-            font-size: 0.9em;
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-        }
-
-        .preset-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .preset-item {
-            background: #f8f9fa;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .preset-name {
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .preset-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .preset-actions button {
-            padding: 5px 10px;
-            font-size: 0.8em;
-        }
-
-        /* Color Customization */
-        .color-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .color-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .color-input-wrapper {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        input[type="color"] {
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .color-value {
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            color: var(--text-color);
-            flex: 1;
-        }
-
-        /* Search/Filter */
-        .filter-section {
-            margin-bottom: 15px;
-        }
-
-        .filter-section input {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 1000px;
             width: 100%;
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
 
-            .hand-matrix {
-                grid-template-columns: repeat(10, 1fr);
-            }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .matrix-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            min-width: 40px;
+            height: 40px;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        td {
+            background-color: #f9f9f9;
+            font-weight: 500;
+        }
+
+        /* Diagonal cells (pairs) */
+        .pair {
+            background-color: #FFE5B4;
+            color: #333;
+        }
+
+        /* Upper triangle (suited hands) */
+        .suited {
+            background-color: #B4E5FF;
+            color: #333;
+        }
+
+        /* Lower triangle (offsuit hands) */
+        .offsuit {
+            background-color: #FFB4B4;
+            color: #333;
+        }
+
+        /* Header row/column styling */
+        .rank-header {
+            background-color: #764ba2;
+            color: white;
+            font-weight: bold;
+        }
+
+        .info-box {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #666;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .legend-color.pairs {
+            background-color: #FFE5B4;
+        }
+
+        .legend-color.suited {
+            background-color: #B4E5FF;
+        }
+
+        .legend-color.offsuit {
+            background-color: #FFB4B4;
         }
 
         @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.8em;
+            .container {
+                padding: 20px;
             }
 
-            .color-grid {
-                grid-template-columns: 1fr;
+            h1 {
+                font-size: 1.5em;
             }
 
-            .hand-matrix {
-                grid-template-columns: repeat(7, 1fr);
+            table {
+                font-size: 10px;
             }
-        }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: var(--card-background);
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-        }
-
-        .modal-header {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: flex-end;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Utility */
-        .text-center {
-            text-align: center;
-        }
-
-        .text-muted {
-            color: #95a5a6;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-
-        .badge-primary {
-            background: var(--secondary-color);
-            color: white;
-        }
-
-        .badge-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .badge-danger {
-            background: var(--accent-color);
-            color: white;
-        }
-
-        .info-text {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 0.9em;
+            th, td {
+                padding: 4px;
+                min-width: 32px;
+                height: 32px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>♠ MiRango ♠</h1>
-            <p>Professional Poker Hand Range Calculator</p>
-        </header>
+        <h1>Poker Hand Matrix</h1>
+        <p class="subtitle">Complete 169 unique poker hand combinations</p>
 
-        <div class="main-grid">
-            <!-- Main Content -->
-            <div>
-                <!-- Tabs Navigation -->
-                <div class="card">
-                    <div class="tabs">
-                        <button class="tab-button active" onclick="switchTab('range')">Range Builder</button>
-                        <button class="tab-button" onclick="switchTab('presets')">Presets</button>
-                        <button class="tab-button" onclick="switchTab('colors')">Customization</button>
-                        <button class="tab-button" onclick="switchTab('help')">Help</button>
-                    </div>
-
-                    <!-- Range Builder Tab -->
-                    <div id="range" class="tab-content active">
-                        <h2>Hand Range Matrix</h2>
-                        <div class="info-text">
-                            <strong>Instructions:</strong> Click cells to include hands in your range. Right-click to exclude. Use quick-select buttons below.
-                        </div>
-
-                        <!-- Quick Select Controls -->
-                        <div class="controls">
-                            <button class="btn-primary" onclick="selectAllPairs()">All Pairs</button>
-                            <button class="btn-primary" onclick="selectBroadway()">Broadway</button>
-                            <button class="btn-primary" onclick="selectConnectors()">Connectors</button>
-                            <button class="btn-primary" onclick="selectHighCards()">High Cards</button>
-                            <button class="btn-secondary" onclick="clearAllHands()">Clear All</button>
-                            <button class="btn-danger" onclick="invertSelection()">Invert</button>
-                        </div>
-
-                        <!-- Hand Matrix -->
-                        <div class="hand-matrix" id="handMatrix"></div>
-
-                        <!-- Range Display -->
-                        <h3>Selected Range</h3>
-                        <div class="range-display empty" id="rangeDisplay">
-                            No hands selected
-                        </div>
-
-                        <!-- Save to Preset -->
-                        <div class="controls">
-                            <input type="text" id="newPresetName" placeholder="Enter preset name..." style="flex: 1;">
-                            <button class="btn-success" onclick="saveAsPreset()">Save as Preset</button>
-                        </div>
-                    </div>
-
-                    <!-- Presets Tab -->
-                    <div id="presets" class="tab-content">
-                        <h2>Manage Presets</h2>
-                        <div class="preset-form">
-                            <div class="form-group">
-                                <label for="presetNameInput">Preset Name</label>
-                                <input type="text" id="presetNameInput" placeholder="e.g., Early Position Open">
-                            </div>
-                            <div class="form-group">
-                                <label for="rangeInput">Hand Range (comma-separated)</label>
-                                <textarea id="rangeInput" placeholder="Example: AA,KK,QQ,AK,AQ,JJ,TT"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="descriptionInput">Description</label>
-                                <textarea id="descriptionInput" placeholder="Describe this range..." style="min-height: 60px;"></textarea>
-                            </div>
-                            <button class="btn-success" onclick="createPreset()">Create Preset</button>
-                        </div>
-
-                        <h3>Saved Presets</h3>
-                        <div class="preset-list" id="presetList">
-                            <p class="text-muted">No presets saved yet</p>
-                        </div>
-                    </div>
-
-                    <!-- Color Customization Tab -->
-                    <div id="colors" class="tab-content">
-                        <h2>Theme Customization</h2>
-                        <div class="info-text">
-                            Customize the application colors to match your preferences.
-                        </div>
-
-                        <div class="color-grid">
-                            <div class="color-input-group">
-                                <label>Primary Color</label>
-                                <div class="color-input-wrapper">
-                                    <input type="color" id="primaryColor" value="#2c3e50" onchange="updateColor('--primary-color', this.value)">
-                                    <div class="color-value" id="primaryColorValue">#2c3e50</div>
-                                </div>
-                            </div>
-
-                            <div class="color-input-group">
-                                <label>Secondary Color</label>
-                                <div class="color-input-wrapper">
-                                    <input type="color" id="secondaryColor" value="#3498db" onchange="updateColor('--secondary-color', this.value)">
-                                    <div class="color-value" id="secondaryColorValue">#3498db</div>
-                                </div>
-                            </div>
-
-                            <div class="color-input-group">
-                                <label>Accent Color</label>
-                                <div class="color-input-wrapper">
-                                    <input type="color" id="accentColor" value="#e74c3c" onchange="updateColor('--accent-color', this.value)">
-                                    <div class="color-value" id="accentColorValue">#e74c3c</div>
-                                </div>
-                            </div>
-
-                            <div class="color-input-group">
-                                <label>Success Color</label>
-                                <div class="color-input-wrapper">
-                                    <input type="color" id="successColor" value="#27ae60" onchange="updateColor('--success-color', this.value)">
-                                    <div class="color-value" id="successColorValue">#27ae60</div>
-                                </div>
-                            </div>
-
-                            <div class="color-input-group">
-                                <label>Warning Color</label>
-                                <div class="color-input-wrapper">
-                                    <input type="color" id="warningColor" value="#f39c12" onchange="updateColor('--warning-color', this.value)">
-                                    <div class="color-value" id="warningColorValue">#f39c12</div>
-                                </div>
-                            </div>
-
-                            <div class="color-input-group">
-                                <label>Background Color</label>
-                                <div class="color-input-wrapper">
-                                    <input type="color" id="backgroundColor" value="#ecf0f1" onchange="updateColor('--background-color', this.value)">
-                                    <div class="color-value" id="backgroundColorValue">#ecf0f1</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="controls" style="margin-top: 20px;">
-                            <button class="btn-primary" onclick="saveTheme()">Save Theme</button>
-                            <button class="btn-secondary" onclick="resetTheme()">Reset to Default</button>
-                            <button class="btn-secondary" onclick="exportTheme()">Export Theme</button>
-                        </div>
-                    </div>
-
-                    <!-- Help Tab -->
-                    <div id="help" class="tab-content">
-                        <h2>Help & Documentation</h2>
-                        
-                        <h3>Getting Started</h3>
-                        <p>MiRango is a professional poker hand range calculator designed to help you analyze and build custom poker ranges.</p>
-
-                        <h3>Range Builder</h3>
-                        <ul style="margin-left: 20px; margin-bottom: 15px;">
-                            <li><strong>Click cells:</strong> Include hands in your range (blue)</li>
-                            <li><strong>Right-click cells:</strong> Exclude hands from your range (red)</li>
-                            <li><strong>Quick buttons:</strong> Select common hand types instantly</li>
-                            <li><strong>Invert:</strong> Reverse your current selection</li>
-                        </ul>
-
-                        <h3>Quick Select Buttons</h3>
-                        <ul style="margin-left: 20px; margin-bottom: 15px;">
-                            <li><strong>All Pairs:</strong> AA-22 inclusive</li>
-                            <li><strong>Broadway:</strong> K, Q, J, T, A high hands</li>
-                            <li><strong>Connectors:</strong> Connected cards (AK, QJ, etc.)</li>
-                            <li><strong>High Cards:</strong> Ace and King combinations</li>
-                        </ul>
-
-                        <h3>Presets</h3>
-                        <p>Save your custom ranges as presets for quick access. Enter hand ranges in standard poker notation (AA, KK, AK, AQo, AQs, etc.).</p>
-
-                        <h3>Customization</h3>
-                        <p>Personalize the interface with custom colors. Your theme is saved in your browser's local storage.</p>
-
-                        <h3>Poker Notation Guide</h3>
-                        <ul style="margin-left: 20px;">
-                            <li><strong>AA, KK, etc.:</strong> Pairs (any suit)</li>
-                            <li><strong>AKs:</strong> Ace-King suited</li>
-                            <li><strong>AKo:</strong> Ace-King offsuit</li>
-                            <li><strong>AK:</strong> Ace-King (both suited and offsuit)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <!-- Statistics -->
-                <div class="stats-box">
-                    <h3>Range Statistics</h3>
-                    <div class="stat-item">
-                        <span class="stat-label">Total Combos:</span>
-                        <span class="stat-value" id="combosCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Pairs:</span>
-                        <span class="stat-value" id="pairsCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Unpaired:</span>
-                        <span class="stat-value" id="unpairedCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Suited:</span>
-                        <span class="stat-value" id="suitedCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Offsuit:</span>
-                        <span class="stat-value" id="ofsuitCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Percentage:</span>
-                        <span class="stat-value" id="percentageCount">0%</span>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="stats-box">
-                    <h3>Quick Actions</h3>
-                    <button class="btn-primary" onclick="copyToClipboard()" style="width: 100%; margin-bottom: 10px;">Copy Range</button>
-                    <button class="btn-secondary" onclick="importRange()" style="width: 100%; margin-bottom: 10px;">Import Range</button>
-                    <button class="btn-danger" onclick="clearAllHands()" style="width: 100%;">Clear Range</button>
-                </div>
-            </div>
+        <div class="matrix-wrapper">
+            <table id="handMatrix"></table>
         </div>
-    </div>
 
-    <!-- Import Modal -->
-    <div id="importModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">Import Range</div>
-            <textarea id="importInput" placeholder="Paste your range here (comma-separated)..." style="width: 100%; min-height: 150px; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: monospace;"></textarea>
-            <div class="modal-actions">
-                <button class="btn-secondary" onclick="closeModal('importModal')">Cancel</button>
-                <button class="btn-primary" onclick="importRangeConfirm()">Import</button>
+        <div class="info-box">
+            <h3>How to Read the Matrix:</h3>
+            <p>This matrix displays all 169 unique starting poker hands organized by rank combinations:</p>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color pairs"></div>
+                    <span><strong>Pairs (Diagonal):</strong> AA, KK, QQ, etc.</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color suited"></div>
+                    <span><strong>Suited (Upper):</strong> AKs, AQs, etc.</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color offsuit"></div>
+                    <span><strong>Offsuit (Lower):</strong> AKo, AQo, etc.</span>
+                </div>
             </div>
+            <p style="margin-top: 15px; font-size: 0.9em; color: #555;">
+                <strong>Note:</strong> Rows represent the first card rank, columns represent the second card rank.
+                For example, intersection of row "A" and column "K" shows AK combinations.
+            </p>
         </div>
     </div>
 
     <script>
-        // ==================== DATA & STATE ====================
-        const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-        const rankIndex = { 'A': 0, 'K': 1, 'Q': 2, 'J': 3, 'T': 4, '9': 5, '8': 6, '7': 7, '6': 8, '5': 9, '4': 10, '3': 11, '2': 12 };
-        
-        let selectedHands = new Set();
-        let excludedHands = new Set();
-        let presets = JSON.parse(localStorage.getItem('pokerPresets')) || {};
-
-        // ==================== INITIALIZATION ====================
-        function initializeApp() {
-            generateHandMatrix();
-            loadTheme();
-            loadPresets();
-            updateRangeDisplay();
-            updateStatistics();
-        }
-
         function generateHandMatrix() {
-            const matrix = document.getElementById('handMatrix');
-            matrix.innerHTML = '';
+            const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+            const matrix = [];
 
-            // Generate 13x13 matrix (ranks vs ranks)
-            for (let i = 0; i < 13; i++) {
-                for (let j = 0; j < 13; j++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'hand-cell';
-                    
+            // Generate the matrix data
+            for (let i = 0; i < ranks.length; i++) {
+                const row = [];
+                for (let j = 0; j < ranks.length; j++) {
                     const rank1 = ranks[i];
                     const rank2 = ranks[j];
-                    
+
                     if (i === j) {
-                        // Pairs
-                        cell.textContent = rank1 + rank1;
-                        cell.classList.add('paired');
-                    } else if (rankIndex[rank1] < rankIndex[rank2]) {
-                        // Skip diagonal - only show unique combinations
-                        continue;
+                        // Diagonal: Pairs
+                        row.push({
+                            hand: rank1 + rank2,
+                            type: 'pair',
+                            class: 'pair'
+                        });
+                    } else if (j > i) {
+                        // Upper triangle: Suited hands
+                        row.push({
+                            hand: rank1 + rank2 + 's',
+                            type: 'suited',
+                            class: 'suited'
+                        });
                     } else {
-                        // Unpaired combinations
-                        cell.textContent = rank1 + rank2;
+                        // Lower triangle: Offsuit hands
+                        row.push({
+                            hand: rank1 + rank2 + 'o',
+                            type: 'offsuit',
+                            class: 'offsuit'
+                        });
                     }
-                    
-                    cell.dataset.hand = cell.textContent;
-                    cell.onclick = () => toggleHand(cell.textContent, 'select');
-                    cell.oncontextmenu = (e) => {
-                        e.preventDefault();
-                        toggleHand(cell.textContent, 'exclude');
-                    };
-                    
-                    matrix.appendChild(cell);
                 }
+                matrix.push(row);
             }
+
+            return { matrix, ranks };
         }
 
-        // ==================== HAND SELECTION ====================
-        function toggleHand(hand, mode) {
-            if (mode === 'select') {
-                if (selectedHands.has(hand)) {
-                    selectedHands.delete(hand);
-                } else {
-                    selectedHands.add(hand);
-                    excludedHands.delete(hand);
-                }
-            } else if (mode === 'exclude') {
-                if (excludedHands.has(hand)) {
-                    excludedHands.delete(hand);
-                } else {
-                    excludedHands.add(hand);
-                    selectedHands.delete(hand);
-                }
-            }
-            updateUI();
-        }
+        function renderMatrix() {
+            const { matrix, ranks } = generateHandMatrix();
+            const table = document.getElementById('handMatrix');
+            table.innerHTML = '';
 
-        function updateUI() {
-            updateHandCellColors();
-            updateRangeDisplay();
-            updateStatistics();
-        }
+            // Create header row
+            const headerRow = document.createElement('tr');
+            const emptyHeader = document.createElement('th');
+            emptyHeader.textContent = '';
+            headerRow.appendChild(emptyHeader);
 
-        function updateHandCellColors() {
-            const cells = document.querySelectorAll('.hand-cell');
-            cells.forEach(cell => {
-                cell.classList.remove('selected-in-range', 'selected-excluded');
-                const hand = cell.dataset.hand;
-                
-                if (selectedHands.has(hand)) {
-                    cell.classList.add('selected-in-range');
-                } else if (excludedHands.has(hand)) {
-                    cell.classList.add('selected-excluded');
-                }
-            });
-        }
-
-        // ==================== QUICK SELECT BUTTONS ====================
-        function selectAllPairs() {
             ranks.forEach(rank => {
-                const pair = rank + rank;
-                selectedHands.add(pair);
-                excludedHands.delete(pair);
+                const th = document.createElement('th');
+                th.className = 'rank-header';
+                th.textContent = rank;
+                headerRow.appendChild(th);
             });
-            updateUI();
-        }
+            table.appendChild(headerRow);
 
-        function selectBroadway() {
-            const broadway = ['A', 'K', 'Q', 'J', 'T'];
-            for (let i = 0; i < broadway.length; i++) {
-                for (let j = i; j < broadway.length; j++) {
-                    const hand = broadway[i] + broadway[j];
-                    selectedHands.add(hand);
-                    excludedHands.delete(hand);
-                }
-            }
-            updateUI();
-        }
+            // Create data rows
+            matrix.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
 
-        function selectConnectors() {
-            for (let i = 0; i < 12; i++) {
-                const hand = ranks[i] + ranks[i + 1];
-                selectedHands.add(hand);
-                excludedHands.delete(hand);
-            }
-            updateUI();
-        }
+                // Row header
+                const rowHeader = document.createElement('th');
+                rowHeader.className = 'rank-header';
+                rowHeader.textContent = ranks[rowIndex];
+                tr.appendChild(rowHeader);
 
-        function selectHighCards() {
-            const highCards = ['A', 'K'];
-            ranks.forEach(rank => {
-                highCards.forEach(high => {
-                    if (high !== rank) {
-                        const hand = high + rank;
-                        selectedHands.add(hand);
-                        excludedHands.delete(hand);
-                    }
+                // Data cells
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.className = cell.class;
+                    td.textContent = cell.hand;
+                    td.title = `${cell.type.charAt(0).toUpperCase() + cell.type.slice(1)}: ${cell.hand}`;
+                    tr.appendChild(td);
                 });
-            });
-            updateUI();
-        }
 
-        function clearAllHands() {
-            selectedHands.clear();
-            excludedHands.clear();
-            updateUI();
-        }
-
-        function invertSelection() {
-            const allHands = new Set();
-            
-            // Generate all possible hands
-            for (let i = 0; i < 13; i++) {
-                for (let j = i; j < 13; j++) {
-                    const hand = ranks[i] + ranks[j];
-                    allHands.add(hand);
-                }
-            }
-            
-            const newSelected = new Set();
-            allHands.forEach(hand => {
-                if (!selectedHands.has(hand)) {
-                    newSelected.add(hand);
-                }
-            });
-            
-            selectedHands = newSelected;
-            excludedHands.clear();
-            updateUI();
-        }
-
-        // ==================== RANGE DISPLAY ====================
-        function updateRangeDisplay() {
-            const display = document.getElementById('rangeDisplay');
-            
-            if (selectedHands.size === 0) {
-                display.className = 'range-display empty';
-                display.textContent = 'No hands selected';
-            } else {
-                display.className = 'range-display';
-                const sortedHands = Array.from(selectedHands).sort();
-                display.textContent = sortedHands.join(', ');
-            }
-        }
-
-        // ==================== STATISTICS ====================
-        function updateStatistics() {
-            let combos = 0;
-            let pairs = 0;
-            let unpaired = 0;
-            let suited = 0;
-            let offsuit = 0;
-
-            selectedHands.forEach(hand => {
-                if (hand[0] === hand[1]) {
-                    // Pair: 6 combos
-                    combos += 6;
-                    pairs += 6;
-                } else {
-                    // Unpaired: 8 combos (4 suited + 4 offsuit)
-                    combos += 8;
-                    unpaired += 8;
-                    suited += 4;
-                    offsuit += 4;
-                }
-            });
-
-            const totalCombos = 1326; // Total possible hand combinations in poker
-            const percentage = totalCombos > 0 ? ((combos / totalCombos) * 100).toFixed(2) : 0;
-
-            document.getElementById('combosCount').textContent = combos;
-            document.getElementById('pairsCount').textContent = pairs;
-            document.getElementById('unpairedCount').textContent = unpaired;
-            document.getElementById('suitedCount').textContent = suited;
-            document.getElementById('ofsuitCount').textContent = offsuit;
-            document.getElementById('percentageCount').textContent = percentage + '%';
-        }
-
-        // ==================== CLIPBOARD ====================
-        function copyToClipboard() {
-            const text = document.getElementById('rangeDisplay').textContent;
-            if (text !== 'No hands selected') {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('Range copied to clipboard!');
-                });
-            }
-        }
-
-        // ==================== IMPORT/EXPORT ====================
-        function importRange() {
-            document.getElementById('importModal').classList.add('show');
-        }
-
-        function importRangeConfirm() {
-            const input = document.getElementById('importInput').value;
-            if (input.trim()) {
-                const hands = input.split(',').map(h => h.trim()).filter(h => h);
-                selectedHands = new Set(hands);
-                excludedHands.clear();
-                updateUI();
-                closeModal('importModal');
-                document.getElementById('importInput').value = '';
-                switchTab('range');
-            }
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-
-        // ==================== PRESETS ====================
-        function createPreset() {
-            const name = document.getElementById('presetNameInput').value.trim();
-            const range = document.getElementById('rangeInput').value.trim();
-            const description = document.getElementById('descriptionInput').value.trim();
-
-            if (!name || !range) {
-                alert('Please enter preset name and range');
-                return;
-            }
-
-            presets[name] = {
-                range: range.split(',').map(h => h.trim()),
-                description: description,
-                created: new Date().toISOString()
-            };
-
-            localStorage.setItem('pokerPresets', JSON.stringify(presets));
-            loadPresets();
-            document.getElementById('presetNameInput').value = '';
-            document.getElementById('rangeInput').value = '';
-            document.getElementById('descriptionInput').value = '';
-            alert('Preset saved successfully!');
-        }
-
-        function saveAsPreset() {
-            const name = document.getElementById('newPresetName').value.trim();
-            if (!name) {
-                alert('Please enter a preset name');
-                return;
-            }
-
-            const range = Array.from(selectedHands).sort();
-            if (range.length === 0) {
-                alert('Please select some hands first');
-                return;
-            }
-
-            presets[name] = {
-                range: range,
-                description: `Created on ${new Date().toLocaleDateString()}`,
-                created: new Date().toISOString()
-            };
-
-            localStorage.setItem('pokerPresets', JSON.stringify(presets));
-            loadPresets();
-            document.getElementById('newPresetName').value = '';
-            alert('Preset saved successfully!');
-        }
-
-        function loadPresets() {
-            const list = document.getElementById('presetList');
-            
-            if (Object.keys(presets).length === 0) {
-                list.innerHTML = '<p class="text-muted">No presets saved yet</p>';
-                return;
-            }
-
-            list.innerHTML = '';
-            Object.entries(presets).forEach(([name, preset]) => {
-                const item = document.createElement('div');
-                item.className = 'preset-item';
-                item.innerHTML = `
-                    <div>
-                        <div class="preset-name">${name}</div>
-                        <div class="text-muted" style="font-size: 0.8em;">${preset.description || ''}</div>
-                    </div>
-                    <div class="preset-actions">
-                        <button class="btn-primary" onclick="loadPreset('${name.replace(/'/g, "\\'")}')">Load</button>
-                        <button class="btn-danger" onclick="deletePreset('${name.replace(/'/g, "\\'")}')">Delete</button>
-                    </div>
-                `;
-                list.appendChild(item);
+                table.appendChild(tr);
             });
         }
 
-        function loadPreset(name) {
-            if (presets[name]) {
-                selectedHands = new Set(presets[name].range);
-                excludedHands.clear();
-                updateUI();
-                switchTab('range');
-            }
-        }
-
-        function deletePreset(name) {
-            if (confirm(`Delete preset "${name}"?`)) {
-                delete presets[name];
-                localStorage.setItem('pokerPresets', JSON.stringify(presets));
-                loadPresets();
-            }
-        }
-
-        // ==================== THEME CUSTOMIZATION ====================
-        function updateColor(cssVar, color) {
-            document.documentElement.style.setProperty(cssVar, color);
-            updateColorDisplay(cssVar, color);
-        }
-
-        function updateColorDisplay(cssVar, color) {
-            const varName = cssVar.replace('--', '').replace('-', '');
-            const displayEl = document.getElementById(varName + 'Value');
-            if (displayEl) {
-                displayEl.textContent = color;
-            }
-        }
-
-        function saveTheme() {
-            const theme = {
-                primaryColor: document.getElementById('primaryColor').value,
-                secondaryColor: document.getElementById('secondaryColor').value,
-                accentColor: document.getElementById('accentColor').value,
-                successColor: document.getElementById('successColor').value,
-                warningColor: document.getElementById('warningColor').value,
-                backgroundColor: document.getElementById('backgroundColor').value
-            };
-            localStorage.setItem('pokerTheme', JSON.stringify(theme));
-            alert('Theme saved successfully!');
-        }
-
-        function loadTheme() {
-            const saved = localStorage.getItem('pokerTheme');
-            if (saved) {
-                const theme = JSON.parse(saved);
-                if (theme.primaryColor) {
-                    document.getElementById('primaryColor').value = theme.primaryColor;
-                    updateColor('--primary-color', theme.primaryColor);
-                }
-                if (theme.secondaryColor) {
-                    document.getElementById('secondaryColor').value = theme.secondaryColor;
-                    updateColor('--secondary-color', theme.secondaryColor);
-                }
-                if (theme.accentColor) {
-                    document.getElementById('accentColor').value = theme.accentColor;
-                    updateColor('--accent-color', theme.accentColor);
-                }
-                if (theme.successColor) {
-                    document.getElementById('successColor').value = theme.successColor;
-                    updateColor('--success-color', theme.successColor);
-                }
-                if (theme.warningColor) {
-                    document.getElementById('warningColor').value = theme.warningColor;
-                    updateColor('--warning-color', theme.warningColor);
-                }
-                if (theme.backgroundColor) {
-                    document.getElementById('backgroundColor').value = theme.backgroundColor;
-                    updateColor('--background-color', theme.backgroundColor);
-                }
-            }
-        }
-
-        function resetTheme() {
-            const defaultTheme = {
-                primaryColor: '#2c3e50',
-                secondaryColor: '#3498db',
-                accentColor: '#e74c3c',
-                successColor: '#27ae60',
-                warningColor: '#f39c12',
-                backgroundColor: '#ecf0f1'
-            };
-
-            Object.entries(defaultTheme).forEach(([key, value]) => {
-                const inputId = key.charAt(0).toUpperCase() + key.slice(1);
-                document.getElementById(inputId).value = value;
-                const cssVar = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                updateColor(cssVar, value);
-            });
-
-            localStorage.removeItem('pokerTheme');
-            alert('Theme reset to default!');
-        }
-
-        function exportTheme() {
-            const theme = {
-                primaryColor: document.getElementById('primaryColor').value,
-                secondaryColor: document.getElementById('secondaryColor').value,
-                accentColor: document.getElementById('accentColor').value,
-                successColor: document.getElementById('successColor').value,
-                warningColor: document.getElementById('warningColor').value,
-                backgroundColor: document.getElementById('backgroundColor').value
-            };
-            
-            const json = JSON.stringify(theme, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'mirango-theme.json';
-            a.click();
-        }
-
-        // ==================== TAB SWITCHING ====================
-        function switchTab(tabName) {
-            // Hide all tabs
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-
-            // Deactivate all buttons
-            const buttons = document.querySelectorAll('.tab-button');
-            buttons.forEach(button => button.classList.remove('active'));
-
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-
-            // Activate corresponding button
-            event.target.classList.add('active');
-        }
-
-        // ==================== STARTUP ====================
-        window.addEventListener('load', initializeApp);
-
-        // Close modal when clicking outside
-        window.addEventListener('click', (e) => {
-            const modal = document.getElementById('importModal');
-            if (e.target === modal) {
-                closeModal('importModal');
-            }
-        });
+        // Render the matrix when the page loads
+        document.addEventListener('DOMContentLoaded', renderMatrix);
     </script>
 </body>
 </html>
